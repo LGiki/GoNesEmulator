@@ -25,13 +25,13 @@ type Header struct {
 }
 
 type Rom struct {
-	Header  Header
-	Trainer []byte
-	PRG     []byte
-	CHR     []byte
-	Extra   []byte
-	Mapper  byte // mapper type
-	Battery byte // battery-backed present
+	Header     Header
+	Trainer    []byte
+	PRG        []byte
+	CHR        []byte
+	Extra      []byte
+	MapperType byte // mapper type
+	Battery    byte // battery-backed present
 }
 
 func LoadRom(reader io.Reader) (*Rom, error) {
@@ -46,7 +46,7 @@ func LoadRom(reader io.Reader) (*Rom, error) {
 		return nil, errors.New("not a valid ines file")
 	}
 
-	if header.isTrainerPresent() {
+	if header.IsTrainerPresent() {
 		rom.Trainer = make([]byte, TRAINER_SIZE)
 		if _, err := reader.Read(rom.Trainer); err != nil {
 			return nil, err
@@ -55,7 +55,7 @@ func LoadRom(reader io.Reader) (*Rom, error) {
 
 	mapper1 := header.Flags6 >> 4
 	mapper2 := header.Flags7 >> 4
-	rom.Mapper = mapper1 | mapper2<<4
+	rom.MapperType = mapper1 | mapper2<<4
 
 	rom.Battery = (header.Flags6 >> 1) & 1
 
@@ -83,14 +83,14 @@ func LoadRom(reader io.Reader) (*Rom, error) {
 	return rom, nil
 }
 
-func (h *Header) isTrainerPresent() bool {
+func (h *Header) IsTrainerPresent() bool {
 	return h.Flags6&(1>>2) == 1
 }
 
-func (h *Header) isHorizontalMirroring() bool {
+func (h *Header) IsHorizontalMirroring() bool {
 	return h.Flags6&1 == 0
 }
 
-func (h *Header) isVerticalMirroring() bool {
+func (h *Header) IsVerticalMirroring() bool {
 	return h.Flags6&1 == 1
 }
